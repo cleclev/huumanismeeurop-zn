@@ -1,0 +1,5 @@
+{
+  "name": "RPG 2D Engine",
+  "description": "Un moteur de jeu RPG 2D modulaire en Vanilla JS/TS avec Canvas et HTML/CSS.",
+  "requestFramePermissions": []
+}

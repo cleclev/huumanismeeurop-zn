@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RPG 2D Engine</title>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="keyboard-menu">
+        <p>ZQSD / Flèches : Déplacement</p>
+        <p>E / Espace : Interagir</p>
+      </div>
+      <canvas id="game-canvas" width="800" height="600"></canvas>
+      <div id="inventory-ui" class="hidden"></div>
+      <div id="dialogue-ui" class="hidden">
+        <div id="dialogue-box">
+          <h3 id="speaker-name"></h3>
+          <p id="dialogue-text"></p>
+          <div id="choices-container"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
