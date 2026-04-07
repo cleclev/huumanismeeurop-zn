@@ -9,7 +9,8 @@ import { ParticleSystem } from './ParticleSystem';
 export enum GameState {
   PLAYING,
   DIALOGUE,
-  TRANSITION
+  TRANSITION,
+  ENDING
 }
 
 export class Game {
@@ -26,6 +27,8 @@ export class Game {
   audio: AudioEngine;
   particles: ParticleSystem;
   transitionAlpha: number = 0;
+  creditsScrollY: number = 0;
+  endingTimer: number = 0;
 
   constructor() {
     this.canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -688,10 +691,8 @@ export class Game {
                   label: 'Injecter de l\'empathie',
                   callback: () => {
                     game.particles.emit(400, 450, 50, '#ff00ff');
-                    game.state = GameState.DIALOGUE;
-                    game.dialogue.show('Système', "La statue s'anime. Le monument est inachevé, et c'est sa force. L'humanisme est un processus permanent. Merci d'avoir joué.", [
-                      { label: 'Fin du jeu', callback: () => window.location.reload() }
-                    ]);
+                    game.state = GameState.ENDING;
+                    game.creditsScrollY = game.canvas.height;
                   }
                 }
               ]);
@@ -727,6 +728,13 @@ export class Game {
   update() {
     if (this.state === GameState.TRANSITION) return;
     this.particles.update();
+    if (this.state === GameState.ENDING) {
+      this.endingTimer++;
+      if (this.endingTimer > 120) { // 2 secondes à 60fps
+        this.creditsScrollY -= 1;
+      }
+      return;
+    }
     if (this.state !== GameState.PLAYING) return;
 
     let dx = 0, dy = 0;
@@ -774,6 +782,31 @@ export class Game {
     if (this.state === GameState.TRANSITION) {
       this.ctx.fillStyle = `rgba(0, 0, 0, ${this.transitionAlpha})`;
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    if (this.state === GameState.ENDING) {
+      this.ctx.fillStyle = 'black';
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      
+      if (this.endingTimer <= 120) {
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '50px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Fin', this.canvas.width / 2, this.canvas.height / 2);
+      } else {
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '20px Arial';
+        const credits = [
+          'Clément Vasseur - FMMS',
+          'Améline Mayeux - FMMS',
+          'Alyha Tebri - FMMS',
+          'Hélie Hubben - FMMS',
+          'Jean Viart - FGES'
+        ];
+        credits.forEach((name, i) => {
+          this.ctx.fillText(name, this.canvas.width / 2, this.canvas.height + this.creditsScrollY + i * 40);
+        });
+      }
     }
   }
 
