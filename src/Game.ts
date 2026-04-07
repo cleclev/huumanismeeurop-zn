@@ -691,12 +691,19 @@ export class Game {
                   label: 'Injecter de l\'empathie',
                   callback: () => {
                     game.particles.emit(400, 450, 50, '#ff00ff');
-                    game.state = GameState.ENDING;
-                    game.creditsScrollY = game.canvas.height;
+                    const d = game.entities.find(e => e.id === 'doorEnd');
+                    if (d) d.isHidden = false;
                   }
                 }
               ]);
             }
+          }
+        },
+        {
+          id: 'doorEnd', x: 400, y: 100, emoji: '🚪', size: 60, isHidden: true,
+          onInteract: (game: Game) => {
+            game.state = GameState.ENDING;
+            game.creditsScrollY = game.canvas.height;
           }
         }
       ]
