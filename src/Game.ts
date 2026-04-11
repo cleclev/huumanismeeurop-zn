@@ -24,6 +24,7 @@ export class Game {
   keys: { [key: string]: boolean } = {};
   progress: { [key: string]: any } = {};
   currentLevel!: Level;
+  currentLevelIndex: number = 0;
   audio: AudioEngine;
   particles: ParticleSystem;
   transitionAlpha: number = 0;
@@ -72,6 +73,7 @@ export class Game {
     this.state = GameState.TRANSITION;
     this.transitionAlpha = 0;
     this.inventory.clear();
+    this.currentLevelIndex = index;
     
     const animateTransition = () => {
       this.transitionAlpha += 0.05;
@@ -482,122 +484,128 @@ X A R M E E J K L M N P</pre>`;
 
   createLevel3(): Level {
     return {
-      spawn: { x: 400, y: 550 },
+      spawn: { x: 400, y: 500 },
       drawBackground: (ctx, width, height) => {
-        // Fond "Cité du Flux" : Serveurs et bruit numérique
-        ctx.fillStyle = '#050510';
+        ctx.fillStyle = '#222';
         ctx.fillRect(0, 0, width, height);
-        
-        // Flux de données (lignes verticales)
-        ctx.strokeStyle = '#00ffcc';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < width; i += 80) {
-          ctx.beginPath();
-          ctx.moveTo(i, 0);
-          ctx.lineTo(i, height);
-          ctx.stroke();
-        }
-
-        // Bruit visuel (Censure douce)
-        ctx.fillStyle = 'rgba(0, 255, 204, 0.1)';
-        ctx.fillRect(100, 100, 200, 150);
-        ctx.fillRect(500, 300, 200, 150);
-        ctx.fillRect(200, 400, 150, 100);
-        
-        ctx.fillStyle = '#00ffcc';
+        ctx.fillStyle = '#444';
         ctx.font = '20px Arial';
-        ctx.fillText('LA CITÉ DU FLUX', 400, 30);
+        ctx.fillText('Niveau 3 . Humanisme Européen . Université Catholique de Lille', 150, 30);
       },
       entities: [
         {
-          id: 'boss_algo', x: 400, y: 100, emoji: '🤖', size: 50, isHidden: false,
+          id: 'censure_zone_1', x: 200, y: 200, emoji: '🚫', size: 40, isHidden: false,
+          onInteract: (game: Game) => {}
+        },
+        {
+          id: 'censure_zone_2', x: 600, y: 200, emoji: '🚫', size: 40, isHidden: false,
+          onInteract: (game: Game) => {}
+        },
+        {
+          id: 'censure_zone_3', x: 200, y: 400, emoji: '🚫', size: 40, isHidden: false,
+          onInteract: (game: Game) => {}
+        },
+        {
+          id: 'censure_zone_4', x: 600, y: 400, emoji: '🚫', size: 40, isHidden: false,
+          onInteract: (game: Game) => {}
+        },
+        {
+          id: 'cle_parole', x: 100, y: 400, emoji: '🗣️', size: 30, isHidden: true,
           onInteract: (game: Game) => {
-            if (game.progress['resistedFlux'] || (game.inventory.hasItem('athens') && game.inventory.hasItem('rome') && game.inventory.hasItem('jerusalem'))) {
-              game.state = GameState.DIALOGUE;
-              game.dialogue.show('L\'Algorithme', "Impossible ! Tu as réuni les piliers de la conscience humaine... Ton individualité résiste à mon flux. La porte est ouverte.", [
-                {
-                  label: 'Reprendre forme humaine',
-                  callback: () => {
-                    game.progress['resistedFlux'] = true;
-                    game.player.emoji = '🧑🎨';
-                    const door = game.entities.find(e => e.id === 'door3');
-                    if (door) door.isHidden = false;
-                    game.inventory.removeItem('athens');
-                    game.inventory.removeItem('rome');
-                    game.inventory.removeItem('jerusalem');
-                  }
-                }
-              ]);
+            game.inventory.addItem('cle_parole', 'Clé de la parole', '🗣️');
+            const e = game.entities.find(e => e.id === 'cle_parole');
+            if (e) e.isHidden = true;
+            game.state = GameState.DIALOGUE;
+            game.dialogue.show('Système', "Clé de la parole obtenue. Tu peux maintenant lire ce qui a été interdit.", [{ label: 'Fermer', callback: null }]);
+          }
+        },
+        {
+          id: 'cle_regard', x: 400, y: 400, emoji: '👁️', size: 30, isHidden: true,
+          onInteract: (game: Game) => {
+            game.inventory.addItem('cle_regard', 'Clé du regard', '👁️');
+            const e = game.entities.find(e => e.id === 'cle_regard');
+            if (e) e.isHidden = true;
+            game.state = GameState.DIALOGUE;
+            game.dialogue.show('Système', "Clé du regard obtenue. Tu peux maintenant voir ce que la caricature dissimule.", [{ label: 'Fermer', callback: null }]);
+          }
+        },
+        {
+          id: 'cle_resistance', x: 700, y: 400, emoji: '✊', size: 30, isHidden: true,
+          onInteract: (game: Game) => {
+            game.inventory.addItem('cle_resistance', 'Clé de la résistance', '✊');
+            const e = game.entities.find(e => e.id === 'cle_resistance');
+            if (e) e.isHidden = true;
+            game.state = GameState.DIALOGUE;
+            game.dialogue.show('Système', "Clé de la résistance obtenue. Tu peux maintenant entendre ce que la pièce murmure.", [{ label: 'Fermer', callback: null }]);
+          }
+        },
+        {
+          id: 'mur_censure', x: 150, y: 150, emoji: '🧱', size: 50, isHidden: false,
+          onInteract: (game: Game) => {
+            game.state = GameState.DIALOGUE;
+            if (!game.inventory.hasItem('cle_parole')) {
+              const cle = game.entities.find(e => e.id === 'cle_parole');
+              if (cle) cle.isHidden = false;
+              game.dialogue.show('Le Mur Censure', "Des mots ont été effacés ici. Il semble qu'une clé soit nécessaire pour lire ce qui a été interdit.", [{ label: 'Fermer', callback: null }]);
             } else {
-              game.progress['talkedToRobot'] = true;
-              game.player.emoji = '🦏';
-              game.state = GameState.DIALOGUE;
-              game.dialogue.show('L\'Algorithme', "Tu es prévisible. Ta rhinocérisation est imminente. Tu es maintenant un rhinocéros.", [
-                {
-                  label: 'Fermer',
-                  callback: () => {
-                    const rhino = game.entities.find(e => e.id === 'rhino1');
-                    if (rhino) rhino.isHidden = false;
-                  }
-                }
-              ]);
+              game.inventory.removeItem('cle_parole');
+              if (!game.inventory.hasItem('indice1')) {
+                game.inventory.addItem('indice1', 'Indice : Censure', '🧱');
+              }
+              game.dialogue.show('Le Mur Censure', "Des mots ont été effacés ici. Des œuvres ont été interdites, des artistes poursuivis. La censure ne détruit pas seulement une œuvre - elle tente d'effacer une pensée.", [{ label: 'Compris', callback: null }]);
             }
           }
         },
         {
-          id: 'rhino1', x: 200, y: 400, emoji: '🦏', size: 40, isHidden: true,
+          id: 'affiche_satirique', x: 400, y: 150, emoji: '🖼️', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['talkedToRhino'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Citoyen Rhinocérisé', "Rejoins le troupeau ! Les piliers apparaissent !", [
-              {
-                label: 'Fermer',
-                callback: () => {
-                  const r1 = game.entities.find(e => e.id === 'relic_athens');
-                  const r2 = game.entities.find(e => e.id === 'relic_rome');
-                  const r3 = game.entities.find(e => e.id === 'relic_jerusalem');
-                  if (r1) r1.isHidden = false;
-                  if (r2) r2.isHidden = false;
-                  if (r3) r3.isHidden = false;
-                }
+            if (!game.inventory.hasItem('cle_regard')) {
+              const cle = game.entities.find(e => e.id === 'cle_regard');
+              if (cle) cle.isHidden = false;
+              game.dialogue.show('Affiche Satirique', "Tu vois un dessin bizarre... mais tu n'en comprends pas le message. Il te faut la clé du regard.", [{ label: 'Fermer', callback: null }]);
+            } else {
+              game.inventory.removeItem('cle_regard');
+              if (!game.inventory.hasItem('indice2')) {
+                game.inventory.addItem('indice2', 'Indice : Satire', '🖼️');
               }
-            ]);
+              game.dialogue.show('Affiche Satirique', "George Grosz utilise la caricature pour dénoncer les élites corrompues de son époque. Militaires, politiciens, industriels : tous représentés comme des figures grotesques. Ses œuvres lui ont valu des procès et finalement l'exil.", [{ label: 'Compris', callback: null }]);
+            }
           }
         },
         {
-          id: 'relic_athens', x: 150, y: 150, emoji: '🦉', size: 30, isHidden: true,
+          id: 'scene_theatre', x: 650, y: 150, emoji: '🎭', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            game.inventory.addItem('athens', "Chouette d'Athènes", '🦉');
-            const e = game.entities.find(e => e.id === 'relic_athens');
-            if (e) e.isHidden = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez trouvé la Chouette d'Athènes.", [{ label: 'Fermer', callback: null }]);
+            if (!game.inventory.hasItem('cle_resistance')) {
+              const cle = game.entities.find(e => e.id === 'cle_resistance');
+              if (cle) cle.isHidden = false;
+              game.dialogue.show('Scène de Théâtre', "Une scène de théâtre ordinaire... Des personnages qui parlent, rien de plus. Il te faut la clé de la résistance.", [{ label: 'Fermer', callback: null }]);
+            } else {
+              game.inventory.removeItem('cle_resistance');
+              if (!game.inventory.hasItem('indice3')) {
+                game.inventory.addItem('indice3', 'Indice : Résistance', '🎭');
+              }
+              game.dialogue.show('Scène de Théâtre', "Dans Rhinocéros, Ionesco montre comment une société entière peut se soumettre à la pensée unique. Un à un, les personnages se transforment - sauf un. L'absurde devient une arme : quand on ne peut pas critiquer directement, la métaphore prend le relais.", [{ label: 'Compris', callback: null }]);
+            }
           }
         },
         {
-          id: 'relic_rome', x: 400, y: 250, emoji: '📜', size: 30, isHidden: true,
+          id: 'door_sortie', x: 400, y: 50, emoji: '🚪', size: 40, isHidden: false,
           onInteract: (game: Game) => {
-            game.inventory.addItem('rome', 'Code de Rome', '📜');
-            const e = game.entities.find(e => e.id === 'relic_rome');
-            if (e) e.isHidden = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez trouvé le Code de Rome.", [{ label: 'Fermer', callback: null }]);
-          }
-        },
-        {
-          id: 'relic_jerusalem', x: 650, y: 150, emoji: '🕯️', size: 30, isHidden: true,
-          onInteract: (game: Game) => {
-            game.inventory.addItem('jerusalem', 'Flambeau de Jérusalem', '🕯️');
-            const e = game.entities.find(e => e.id === 'relic_jerusalem');
-            if (e) e.isHidden = true;
-            game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez trouvé le Flambeau de Jérusalem.", [{ label: 'Fermer', callback: null }]);
-          }
-        },
-        {
-          id: 'door3', x: 400, y: 30, emoji: '🚪', size: 60, isHidden: true,
-          onInteract: (game: Game) => {
-            game.loadLevel(4);
+            if (game.inventory.hasItem('indice1') && game.inventory.hasItem('indice2') && game.inventory.hasItem('indice3')) {
+              game.dialogue.show('Porte de Sortie', "Tu as compris que la censure ne fait pas taire l'art - elle le pousse à se réinventer. L'humanisme européen repose sur un droit fondamental : penser, créer et critiquer librement.", [
+                {
+                  label: 'Passer au niveau 4',
+                  callback: () => {
+                    game.loadLevel(4);
+                  }
+                }
+              ]);
+            } else {
+              game.dialogue.show('Porte de Sortie', "Il te manque encore des indices... Retourne explorer la salle.", [{ label: 'Fermer', callback: null }]);
+            }
           }
         }
       ]
@@ -1015,6 +1023,10 @@ X A R M E E J K L M N P</pre>`;
     }
     if (this.state !== GameState.PLAYING) return;
 
+    if (this.currentLevelIndex === 3) {
+      this.updateLevel3();
+    }
+
     let dx = 0, dy = 0;
     if (this.keys['ArrowUp'] || this.keys['z']) dy = -1;
     if (this.keys['ArrowDown'] || this.keys['s']) dy = 1;
@@ -1028,6 +1040,39 @@ X A R M E E J K L M N P</pre>`;
     }
 
     this.player.move(dx, dy, this.canvas.width, this.canvas.height);
+  }
+
+  updateLevel3() {
+    const zones = this.entities.filter(e => e.id.startsWith('censure_zone_'));
+    const time = Date.now() * 0.002;
+    for (let i = 0; i < zones.length; i++) {
+      const zone = zones[i];
+      // Trajectoires différentes pour les 4 zones
+      const offset = i * (Math.PI / 2);
+      zone.x = 400 + Math.cos(time + offset) * 250;
+      zone.y = 300 + Math.sin(time + offset) * 150;
+      
+      if (Math.hypot(zone.x - this.player.x, zone.y - this.player.y) < zone.size) {
+        this.player.x = this.currentLevel.spawn.x;
+        this.player.y = this.currentLevel.spawn.y;
+        this.audio.play('error');
+        
+        // Réinitialiser les clés
+        this.inventory.removeItem('cle_parole');
+        this.inventory.removeItem('cle_regard');
+        this.inventory.removeItem('cle_resistance');
+        
+        // Cacher les clés
+        const keys = ['cle_parole', 'cle_regard', 'cle_resistance'];
+        keys.forEach(k => {
+          const e = this.entities.find(e => e.id === k);
+          if (e) e.isHidden = true;
+        });
+
+        this.state = GameState.DIALOGUE;
+        this.dialogue.show('Censure', "Tu as été censuré ! Les clés ont été confisquées, retour au début.", [{ label: 'Fermer', callback: null }]);
+      }
+    }
   }
 
   draw() {
