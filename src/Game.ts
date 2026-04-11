@@ -617,7 +617,7 @@ X A R M E E J K L M N P</pre>`;
       spawn: { x: 100, y: 500 },
       drawBackground: (ctx, width, height) => {
         // Bureau de douane
-        ctx.fillStyle = '#d3d3d3'; // Gris bureau
+        ctx.fillStyle = '#e0e0e0'; // Gris plus clair
         ctx.fillRect(0, 0, width, height);
 
         // Paperasse au sol (Statique)
@@ -625,22 +625,12 @@ X A R M E E J K L M N P</pre>`;
         const seed = 12345;
         let x = seed;
         for (let i = 0; i < 20; i++) {
-          // Simple générateur de nombres pseudo-aléatoires déterministe
           x = (x * 16807) % 2147483647;
           const posX = x % width;
           x = (x * 16807) % 2147483647;
           const posY = x % height;
           ctx.fillRect(posX, posY, 15, 20);
         }
-
-        // Drapeaux Européens mal accrochés
-        ctx.fillStyle = '#003399';
-        ctx.fillRect(50, 20, 60, 40);
-        ctx.fillRect(700, 30, 60, 40);
-        ctx.fillStyle = '#ffcc00';
-        ctx.font = '10px Arial';
-        ctx.fillText('★', 80, 45);
-        ctx.fillText('★', 730, 55);
 
         // Machine à café bruyante
         ctx.fillStyle = '#333';
@@ -687,7 +677,7 @@ X A R M E E J K L M N P</pre>`;
           }
         },
         {
-          id: 'lamp', x: 600, y: 100, emoji: '💡', size: 35, isHidden: false,
+          id: 'lamp', x: 600, y: 100, emoji: '💡', size: 35, isHidden: true,
           onInteract: (game: Game) => {
             game.progress['lampMoved'] = !game.progress['lampMoved'];
             game.state = GameState.DIALOGUE;
@@ -699,10 +689,12 @@ X A R M E E J K L M N P</pre>`;
           id: 'map_denmark', x: 700, y: 100, emoji: '🗺️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
+            const lamp = game.entities.find(e => e.id === 'lamp');
+            if (lamp) lamp.isHidden = false;
             if (game.progress['lampMoved']) {
               game.dialogue.show('Carte du Danemark', "La lumière révèle un message : 'Le premier caractère est un S avec un crochet (Š). On l'appelle la ville-carrefour'.", [{ label: 'Intéressant', callback: null }]);
             } else {
-              game.dialogue.show('Carte du Danemark', "Une carte ordinaire du Danemark. Il fait un peu sombre ici.", [{ label: 'Fermer', callback: null }]);
+              game.dialogue.show('Carte du Danemark', "Une carte ordinaire du Danemark. Il fait un peu sombre ici. Peut-être qu'une lampe aiderait ?", [{ label: 'Fermer', callback: null }]);
             }
           }
         },
@@ -1015,6 +1007,10 @@ X A R M E E J K L M N P</pre>`;
     if (this.state === GameState.TRANSITION) return;
     this.particles.update();
     if (this.state === GameState.ENDING) {
+      this.inventory.hide();
+      this.dialogue.hideWithoutCallback();
+      document.getElementById('inventory-ui')?.classList.add('hidden');
+      document.getElementById('dialogue-ui')?.classList.add('hidden');
       this.endingTimer++;
       if (this.endingTimer > 120) { // 2 secondes à 60fps
         this.creditsScrollY -= 1;

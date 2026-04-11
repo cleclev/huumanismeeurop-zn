@@ -31,6 +31,10 @@ export class Inventory {
     this.updateUI();
   }
 
+  hide() {
+    this.uiElement.classList.add('hidden');
+  }
+
   private updateUI() {
     this.uiElement.innerHTML = '<h3 class="font-bold mb-2">Inventaire</h3>';
     this.items.forEach(item => {

@@ -109,4 +109,9 @@ export class Dialogue {
     this.ui.classList.add('hidden');
     this.onComplete();
   }
+
+  hideWithoutCallback() {
+    if (this.typewriterInterval) clearInterval(this.typewriterInterval);
+    this.ui.classList.add('hidden');
+  }
 }
