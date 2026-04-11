@@ -71,6 +71,7 @@ export class Game {
   loadLevel(index: number) {
     this.state = GameState.TRANSITION;
     this.transitionAlpha = 0;
+    this.inventory.clear();
     
     const animateTransition = () => {
       this.transitionAlpha += 0.05;
@@ -202,7 +203,7 @@ export class Game {
       entities: [
         // Objets à récupérer
         {
-          id: 'eye', x: 200, y: 300, emoji: '👁️', size: 30, isHidden: false,
+          id: 'eye', x: 50, y: 300, emoji: '👁️', size: 30, isHidden: true,
           onInteract: (game: Game) => {
             game.inventory.addItem('cle_regard', 'Clé du regard', '👁️');
             const e = game.entities.find(e => e.id === 'eye');
@@ -212,7 +213,7 @@ export class Game {
           }
         },
         {
-          id: 'brush', x: 400, y: 300, emoji: '🖌️', size: 30, isHidden: false,
+          id: 'brush', x: 400, y: 250, emoji: '🖌️', size: 30, isHidden: true,
           onInteract: (game: Game) => {
             game.inventory.addItem('cle_expression', 'Clé de l\'expression', '🖌️');
             const e = game.entities.find(e => e.id === 'brush');
@@ -222,7 +223,7 @@ export class Game {
           }
         },
         {
-          id: 'vest', x: 600, y: 300, emoji: '🦺', size: 30, isHidden: false,
+          id: 'vest', x: 750, y: 300, emoji: '🦺', size: 30, isHidden: true,
           onInteract: (game: Game) => {
             game.inventory.addItem('cle_realite', 'Clé de la réalité', '🦺');
             const e = game.entities.find(e => e.id === 'vest');
@@ -237,8 +238,11 @@ export class Game {
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
             if (!game.inventory.hasItem('cle_regard')) {
-              game.dialogue.show('Le Mur', "Ce mur semble vide…", [{ label: 'Fermer', callback: null }]);
+              const eye = game.entities.find(e => e.id === 'eye');
+              if (eye) eye.isHidden = false;
+              game.dialogue.show('Le Mur', "Ce mur semble vide… mais ton regard semble attirer quelque chose. Une clé du regard est apparue !", [{ label: 'Fermer', callback: null }]);
             } else {
+              game.inventory.removeItem('cle_regard');
               if (!game.inventory.hasItem('indice_mur')) {
                 game.inventory.addItem('indice_mur', 'Indice : Invisibilisation', '🧱');
               }
@@ -251,8 +255,11 @@ export class Game {
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
             if (!game.inventory.hasItem('cle_expression')) {
-              game.dialogue.show('L\'Art', "Tu vois l’œuvre… mais tu ne comprends pas son message.", [{ label: 'Fermer', callback: null }]);
+              const brush = game.entities.find(e => e.id === 'brush');
+              if (brush) brush.isHidden = false;
+              game.dialogue.show('L\'Art', "Tu vois l’œuvre… mais tu ne comprends pas son message. Une clé de l'expression est apparue !", [{ label: 'Fermer', callback: null }]);
             } else {
+              game.inventory.removeItem('cle_expression');
               if (!game.inventory.hasItem('indice_banksy')) {
                 game.inventory.addItem('indice_banksy', 'Indice : Banksy', '🎨');
               }
@@ -265,8 +272,11 @@ export class Game {
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
             if (!game.inventory.hasItem('cle_realite')) {
-              game.dialogue.show('La Mer', "La mer reste silencieuse…", [{ label: 'Fermer', callback: null }]);
+              const vest = game.entities.find(e => e.id === 'vest');
+              if (vest) vest.isHidden = false;
+              game.dialogue.show('La Mer', "La mer reste silencieuse… mais un objet flotte au loin. Une clé de la réalité est apparue !", [{ label: 'Fermer', callback: null }]);
             } else {
+              game.inventory.removeItem('cle_realite');
               if (!game.inventory.hasItem('indice_weiwei')) {
                 game.inventory.addItem('indice_weiwei', 'Indice : Ai Weiwei', '🌊');
               }
@@ -276,7 +286,7 @@ export class Game {
         },
         // Sortie
         {
-          id: 'door1', x: 700, y: 100, emoji: '🚪', size: 60, isHidden: false,
+          id: 'door1', x: 400, y: 30, emoji: '🚪', size: 40, isHidden: false,
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
             if (game.inventory.hasItem('indice_mur') && game.inventory.hasItem('indice_banksy') && game.inventory.hasItem('indice_weiwei')) {
@@ -721,11 +731,17 @@ export class Game {
           id: 'genie', x: 400, y: 500, emoji: '🧞‍♂️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
+            const b = game.entities.find(e => e.id === 'bibliotheque');
+            const g = game.entities.find(e => e.id === 'galerie');
+            const p = game.entities.find(e => e.id === 'pupitre');
+            if (b) b.isHidden = false;
+            if (g) g.isHidden = false;
+            if (p) p.isHidden = false;
             game.dialogue.show('Génie de la Bibliothèque', "Bravo, vous avez atteint le seuil de la synthèse. Ici, le cœur et la raison doivent s'accorder. 📚 Allez à la Bibliothèque Ancienne pour commencer.", [{ label: 'Compris', callback: null }]);
           }
         },
         {
-          id: 'bibliotheque', x: 175, y: 150, emoji: '📚', size: 50, isHidden: false,
+          id: 'bibliotheque', x: 175, y: 150, emoji: '📚', size: 50, isHidden: true,
           onInteract: (game: Game) => {
             if (!game.inventory.hasItem('indice1')) {
               game.inventory.addItem('indice1', 'Indice : Auto-transformation', '📚');
@@ -735,7 +751,7 @@ export class Game {
           }
         },
         {
-          id: 'galerie', x: 625, y: 150, emoji: '🖼️', size: 50, isHidden: false,
+          id: 'galerie', x: 625, y: 150, emoji: '🖼️', size: 50, isHidden: true,
           onInteract: (game: Game) => {
             if (!game.inventory.hasItem('indice1')) {
                game.state = GameState.DIALOGUE;
@@ -750,7 +766,7 @@ export class Game {
           }
         },
         {
-          id: 'pupitre', x: 400, y: 400, emoji: '✍️', size: 40, isHidden: false,
+          id: 'pupitre', x: 400, y: 400, emoji: '✍️', size: 40, isHidden: true,
           onInteract: (game: Game) => {
             if (!game.inventory.hasItem('indice1')) {
                game.state = GameState.DIALOGUE;
@@ -887,19 +903,21 @@ export class Game {
   interact() {
     const interactable = this.entities
       .filter(e => !e.isHidden)
-      .filter(e => Math.hypot(e.x - this.player.x, e.y - this.player.y) < 100);
+      .filter(e => Math.hypot(e.x - this.player.x, e.y - this.player.y) < e.size * 1.5);
 
     if (interactable.length === 0) return;
 
-    // Trier par distance, mais donner la priorité absolue aux portes
+    // Trier par distance, mais donner la priorité absolue aux portes si on est vraiment dessus
     interactable.sort((a, b) => {
-      const isDoorA = a.emoji === '🚪';
-      const isDoorB = b.emoji === '🚪';
+      const distA = Math.hypot(a.x - this.player.x, a.y - this.player.y);
+      const distB = Math.hypot(b.x - this.player.x, b.y - this.player.y);
+
+      const isDoorA = a.emoji === '🚪' && distA < a.size;
+      const isDoorB = b.emoji === '🚪' && distB < b.size;
+      
       if (isDoorA && !isDoorB) return -1;
       if (!isDoorA && isDoorB) return 1;
 
-      const distA = Math.hypot(a.x - this.player.x, a.y - this.player.y);
-      const distB = Math.hypot(b.x - this.player.x, b.y - this.player.y);
       return distA - distB;
     });
 

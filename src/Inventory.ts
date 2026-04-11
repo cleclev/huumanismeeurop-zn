@@ -26,6 +26,11 @@ export class Inventory {
     this.updateUI();
   }
 
+  clear() {
+    this.items = [];
+    this.updateUI();
+  }
+
   private updateUI() {
     this.uiElement.innerHTML = '<h3 class="font-bold mb-2">Inventaire</h3>';
     this.items.forEach(item => {
