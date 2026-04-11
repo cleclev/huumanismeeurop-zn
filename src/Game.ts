@@ -172,65 +172,124 @@ export class Game {
 
   createLevel1(): Level {
     return {
-      spawn: { x: 400, y: 500 },
+      spawn: { x: 400, y: 400 },
       drawBackground: (ctx, width, height) => {
-        const tileSize = 80;
-        for (let y = 0; y < height; y += tileSize) {
-          for (let x = 0; x < width; x += tileSize) {
-            ctx.fillStyle = ((x / tileSize + y / tileSize) % 2 === 0) ? '#5c2a21' : '#4a2018';
-            ctx.fillRect(x, y, tileSize, tileSize);
-            ctx.strokeStyle = '#30100a';
-            ctx.strokeRect(x, y, tileSize, tileSize);
-          }
-        }
-        // Piliers et torches
-        ctx.fillStyle = '#111';
-        
-        ctx.fillRect(150, 150, 60, 60);
-        ctx.font = '40px Arial';
-        ctx.fillText('🔥', 180, 140);
+        // Sol urbain (béton)
+        ctx.fillStyle = '#555555';
+        ctx.fillRect(0, 0, width, height);
 
-        ctx.fillRect(590, 150, 60, 60);
-        ctx.fillText('🔥', 620, 140);
+        // La Mer (en bas)
+        ctx.fillStyle = '#006699';
+        ctx.fillRect(0, 450, width, 150);
+        ctx.fillStyle = '#0088cc';
+        ctx.font = '30px Arial';
+        ctx.fillText('🌊', 100, 500);
+        ctx.fillText('🌊', 300, 520);
+        ctx.fillText('🌊', 500, 480);
+        ctx.fillText('🌊', 700, 510);
+
+        // Le Mur (en haut)
+        ctx.fillStyle = '#8B4513'; // Briques
+        ctx.fillRect(100, 50, 600, 100);
+        ctx.fillStyle = '#A0522D';
+        for(let i=100; i<700; i+=40) {
+          ctx.fillRect(i, 50, 38, 20);
+          ctx.fillRect(i-20, 72, 38, 20);
+          ctx.fillRect(i, 94, 38, 20);
+          ctx.fillRect(i-20, 116, 38, 20);
+        }
       },
       entities: [
+        // Objets à récupérer
         {
-          id: 'goya', x: 100, y: 400, emoji: '🖼️', size: 30, isHidden: false,
+          id: 'eye', x: 200, y: 300, emoji: '👁️', size: 30, isHidden: false,
           onInteract: (game: Game) => {
-            game.inventory.addItem('goya', 'Goya - La Raison', '🖼️');
-            const entity = game.entities.find(e => e.id === 'goya');
-            if (entity) entity.isHidden = true;
+            game.inventory.addItem('cle_regard', 'Clé du regard', '👁️');
+            const e = game.entities.find(e => e.id === 'eye');
+            if (e) e.isHidden = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez sauvé l'œuvre 'Le sommeil de la raison engendre des monstres' de Goya !", [{ label: 'Fermer', callback: null }]);
+            game.dialogue.show('Système', "Tu peux maintenant voir ce qui était caché.", [{ label: 'Fermer', callback: null }]);
           }
         },
         {
-          id: 'door1', x: 400, y: 50, emoji: '🚪', size: 60, isHidden: true,
+          id: 'brush', x: 400, y: 300, emoji: '🖌️', size: 30, isHidden: false,
           onInteract: (game: Game) => {
-            game.loadLevel(2);
+            game.inventory.addItem('cle_expression', 'Clé de l\'expression', '🖌️');
+            const e = game.entities.find(e => e.id === 'brush');
+            if (e) e.isHidden = true;
+            game.state = GameState.DIALOGUE;
+            game.dialogue.show('Système', "Tu peux maintenant comprendre le message de l'artiste.", [{ label: 'Fermer', callback: null }]);
           }
         },
         {
-          id: 'inquisitor', x: 400, y: 200, emoji: '🧙‍♂️', size: 40, isHidden: false,
+          id: 'vest', x: 600, y: 300, emoji: '🦺', size: 30, isHidden: false,
+          onInteract: (game: Game) => {
+            game.inventory.addItem('cle_realite', 'Clé de la réalité', '🦺');
+            const e = game.entities.find(e => e.id === 'vest');
+            if (e) e.isHidden = true;
+            game.state = GameState.DIALOGUE;
+            game.dialogue.show('Système', "Tu peux maintenant révéler ce que cache la mer.", [{ label: 'Fermer', callback: null }]);
+          }
+        },
+        // Points d'interaction
+        {
+          id: 'wall', x: 200, y: 100, emoji: '🧱', size: 50, isHidden: false,
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
-            if (!game.inventory.hasItem('goya')) {
-              game.dialogue.show('Grand Inquisiteur', "L'art non contrôlé pervertit l'âme. L'Encyclopédie doit brûler. Cherchez la lumière du dogme, pas celle de la raison.", [{ label: 'Fermer', callback: null }]);
+            if (!game.inventory.hasItem('cle_regard')) {
+              game.dialogue.show('Le Mur', "Ce mur semble vide…", [{ label: 'Fermer', callback: null }]);
             } else {
-              game.dialogue.show('Grand Inquisiteur', "Que cachez-vous là ? Une œuvre interdite ?", [
+              if (!game.inventory.hasItem('indice_mur')) {
+                game.inventory.addItem('indice_mur', 'Indice : Invisibilisation', '🧱');
+              }
+              game.dialogue.show('Le Mur', "Quelque chose a été effacé… L’art révèle ce que l’Europe préfère parfois cacher : certaines réalités, comme les migrants ou les injustices, sont invisibilisées.", [{ label: 'Compris', callback: null }]);
+            }
+          }
+        },
+        {
+          id: 'art', x: 400, y: 100, emoji: '🎨', size: 50, isHidden: false,
+          onInteract: (game: Game) => {
+            game.state = GameState.DIALOGUE;
+            if (!game.inventory.hasItem('cle_expression')) {
+              game.dialogue.show('L\'Art', "Tu vois l’œuvre… mais tu ne comprends pas son message.", [{ label: 'Fermer', callback: null }]);
+            } else {
+              if (!game.inventory.hasItem('indice_banksy')) {
+                game.inventory.addItem('indice_banksy', 'Indice : Banksy', '🎨');
+              }
+              game.dialogue.show('L\'Art', "Banksy utilise l’art pour dénoncer les injustices. Ses œuvres montrent les migrants, les frontières et les contradictions de l’Europe. Il critique le manque de solidarité.", [{ label: 'Compris', callback: null }]);
+            }
+          }
+        },
+        {
+          id: 'sea', x: 600, y: 500, emoji: '🌊', size: 50, isHidden: false,
+          onInteract: (game: Game) => {
+            game.state = GameState.DIALOGUE;
+            if (!game.inventory.hasItem('cle_realite')) {
+              game.dialogue.show('La Mer', "La mer reste silencieuse…", [{ label: 'Fermer', callback: null }]);
+            } else {
+              if (!game.inventory.hasItem('indice_weiwei')) {
+                game.inventory.addItem('indice_weiwei', 'Indice : Ai Weiwei', '🌊');
+              }
+              game.dialogue.show('La Mer', "Ce gilet n’est pas un simple objet… Il représente les migrants et les dangers qu’ils traversent. Ai Weiwei utilise des objets réels pour rendre la crise concrète. Derrière les chiffres, il y a des vies humaines.", [{ label: 'Compris', callback: null }]);
+            }
+          }
+        },
+        // Sortie
+        {
+          id: 'door1', x: 700, y: 100, emoji: '🚪', size: 60, isHidden: false,
+          onInteract: (game: Game) => {
+            game.state = GameState.DIALOGUE;
+            if (game.inventory.hasItem('indice_mur') && game.inventory.hasItem('indice_banksy') && game.inventory.hasItem('indice_weiwei')) {
+              game.dialogue.show('Porte de sortie', "Tu as compris que l’Europe est pleine de contradictions… L’art permet de révéler, critiquer et faire réfléchir.", [
                 {
-                  label: 'Lui montrer la toile de Goya',
+                  label: 'Passer au niveau 2',
                   callback: () => {
-                    game.inventory.removeItem('goya');
-                    const inq = game.entities.find(e => e.id === 'inquisitor');
-                    if (inq) inq.isHidden = true;
-                    const door = game.entities.find(e => e.id === 'door1');
-                    if (door) door.isHidden = false;
-                    game.dialogue.show('Grand Inquisiteur', "Argh ! L'esprit critique m'aveugle !", [{ label: 'Fermer', callback: null }]);
+                    game.loadLevel(2);
                   }
-                },
-                { label: 'Ne rien dire', callback: null }
+                }
               ]);
+            } else {
+              game.dialogue.show('Porte de sortie', "Il te manque encore des indices…", [{ label: 'Fermer', callback: null }]);
             }
           }
         }
@@ -635,6 +694,15 @@ export class Game {
         ctx.fillStyle = '#ffcc80';
         ctx.fillText('Galerie Sombre', 625, 70);
 
+        // Emojis descriptifs du tableau
+        ctx.font = '24px Arial';
+        ctx.fillText('✨', 550, 110);
+        ctx.fillText('🙏', 700, 110);
+        ctx.fillText('👗', 550, 190);
+        ctx.fillText('😇', 700, 190);
+        ctx.fillText('🕯️', 625, 210);
+        ctx.fillText('😭', 625, 100);
+
         // Lieu C : Pupitre de l'Érudit (Bas Centre)
         ctx.fillStyle = '#4e342e';
         ctx.fillRect(300, 350, 200, 150);
@@ -659,7 +727,9 @@ export class Game {
         {
           id: 'bibliotheque', x: 175, y: 150, emoji: '📚', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['hasIndice1'] = true;
+            if (!game.inventory.hasItem('indice1')) {
+              game.inventory.addItem('indice1', 'Indice : Auto-transformation', '📚');
+            }
             game.state = GameState.DIALOGUE;
             game.dialogue.show('Bibliothèque Ancienne', "Pour stabiliser les fondations de l'Europe, il faut comprendre comment l'art et la pensée la construisent. C'est un véritable processus d'auto-transformation. 🖌️🪶 Visitez la Galerie Sombre et le Pupitre de l'Érudit.", [{ label: 'Chercher la suite', callback: null }]);
           }
@@ -667,12 +737,14 @@ export class Game {
         {
           id: 'galerie', x: 625, y: 150, emoji: '🖼️', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            if (!game.progress['hasIndice1']) {
+            if (!game.inventory.hasItem('indice1')) {
                game.state = GameState.DIALOGUE;
                game.dialogue.show('Galerie Sombre', "Il fait trop sombre pour comprendre cette œuvre. Visitez d'abord la Bibliothèque Ancienne.", [{ label: 'Fermer', callback: null }]);
                return;
             }
-            game.progress['hasIndice2'] = true;
+            if (!game.inventory.hasItem('indice2')) {
+              game.inventory.addItem('indice2', 'Indice : Émotion & Clair-obscur', '🖼️');
+            }
             game.state = GameState.DIALOGUE;
             game.dialogue.show('Galerie Sombre', "Une femme au centre, un contraste violent entre ombre et lumière (clair-obscur), des vêtements en mouvement et un regard tourné vers le ciel. Est-ce une simple image ou une émotion qui transperce la toile ? N'oubliez pas le regard masculin qui cadre cette émotion. 🖌️", [{ label: 'Fascinant', callback: null }]);
           }
@@ -680,12 +752,14 @@ export class Game {
         {
           id: 'pupitre', x: 400, y: 400, emoji: '✍️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
-            if (!game.progress['hasIndice1']) {
+            if (!game.inventory.hasItem('indice1')) {
                game.state = GameState.DIALOGUE;
                game.dialogue.show('Pupitre de l\'Érudit', "Des manuscrits illisibles sans le contexte de la Bibliothèque Ancienne.", [{ label: 'Fermer', callback: null }]);
                return;
             }
-            game.progress['hasIndice3'] = true;
+            if (!game.inventory.hasItem('indice3')) {
+              game.inventory.addItem('indice3', 'Indice : Esprit critique', '✍️');
+            }
             game.state = GameState.DIALOGUE;
             game.dialogue.show('Pupitre de l\'Érudit', "Un homme qui a révolutionné l'Europe par sa plume 🪶. Il ne dirigeait pas d'armée, mais il utilisait l'humour et l'ironie pour dénoncer l'hypocrisie de l'Église et des rois. Pour lui, 'la Folie' est un personnage qui dit la vérité. C'est le triomphe de l'esprit critique.", [{ label: 'Intéressant', callback: null }]);
           }
@@ -693,7 +767,7 @@ export class Game {
         {
           id: 'mur_blanc', x: 400, y: 250, emoji: '🧱', size: 60, isHidden: false,
           onInteract: (game: Game) => {
-            if (!game.progress['hasIndice2'] || !game.progress['hasIndice3']) {
+            if (!game.inventory.hasItem('indice2') || !game.inventory.hasItem('indice3')) {
               game.state = GameState.DIALOGUE;
               game.dialogue.show('Le Grand Mur Blanc', "Le mur attend que vous ayez saisi l'émotion de la Galerie et la pensée du Pupitre.", [{ label: 'Fermer', callback: null }]);
             } else {
