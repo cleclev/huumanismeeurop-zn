@@ -908,7 +908,7 @@ export class Game {
           'Améline Mayeux - FMMS',
           'Alyha Tebri - FMMS',
           'Hélie Hubben - FMMS',
-          'Jean Viart - FGES'
+          'Jean Wiart - FGES'
         ];
         credits.forEach((name, i) => {
           this.ctx.fillText(name, this.canvas.width / 2, this.canvas.height + this.creditsScrollY + i * 40);
