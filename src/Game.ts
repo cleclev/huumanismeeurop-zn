@@ -506,10 +506,6 @@ X A R M E E J K L M N P</pre>`;
           onInteract: (game: Game) => {}
         },
         {
-          id: 'censure_zone_4', x: 600, y: 400, emoji: '🚫', size: 40, isHidden: false,
-          onInteract: (game: Game) => {}
-        },
-        {
           id: 'cle_parole', x: 100, y: 400, emoji: '🗣️', size: 30, isHidden: true,
           onInteract: (game: Game) => {
             game.inventory.addItem('cle_parole', 'Clé de la parole', '🗣️');
@@ -1040,7 +1036,7 @@ X A R M E E J K L M N P</pre>`;
 
   updateLevel3() {
     const zones = this.entities.filter(e => e.id.startsWith('censure_zone_'));
-    const time = Date.now() * 0.002;
+    const time = Date.now() * 0.0019;
     for (let i = 0; i < zones.length; i++) {
       const zone = zones[i];
       // Trajectoires différentes pour les 4 zones
