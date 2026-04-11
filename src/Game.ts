@@ -608,94 +608,153 @@ export class Game {
     return {
       spawn: { x: 400, y: 550 },
       drawBackground: (ctx, width, height) => {
-        ctx.save();
-        ctx.fillStyle = '#f0f0f0';
+        // Fond général
+        ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = '#dcdcdc';
-        ctx.fillRect(100, 100, 50, 400);
-        ctx.fillRect(650, 100, 50, 400);
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(150, 100, 500, 300);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(200, 150, 400, 200);
-        ctx.fillStyle = '#0f0';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText('...témoignage de vie...', 210, 180);
-        ctx.restore();
+
+        // Lieu A : Bibliothèque Ancienne (Haut Gauche)
+        ctx.fillStyle = '#3e2723'; // Marron foncé
+        ctx.fillRect(50, 50, 250, 200);
+        ctx.fillStyle = '#5d4037';
+        for(let i=0; i<4; i++) {
+            ctx.fillRect(60, 80 + i*40, 230, 10);
+        }
+        ctx.fillStyle = '#d7ccc8';
+        ctx.font = '16px Arial';
+        ctx.fillText('Bibliothèque Ancienne', 175, 70);
+
+        // Lieu B : Galerie Sombre (Haut Droite)
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(500, 50, 250, 200);
+        // Clair-obscur effect
+        const gradient = ctx.createRadialGradient(625, 150, 10, 625, 150, 100);
+        gradient.addColorStop(0, 'rgba(255, 200, 100, 0.5)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(500, 50, 250, 200);
+        ctx.fillStyle = '#ffcc80';
+        ctx.fillText('Galerie Sombre', 625, 70);
+
+        // Lieu C : Pupitre de l'Érudit (Bas Centre)
+        ctx.fillStyle = '#4e342e';
+        ctx.fillRect(300, 350, 200, 150);
+        ctx.fillStyle = '#fff9c4';
+        ctx.fillRect(320, 380, 40, 50); // Manuscrit
+        ctx.fillRect(380, 390, 50, 40); // Manuscrit
+        ctx.fillStyle = '#d7ccc8';
+        ctx.fillText('Pupitre de l\'Érudit', 400, 370);
       },
       entities: [
         {
-          id: 'marie', x: 200, y: 250, emoji: '💃', size: 40, isHidden: false,
+          id: 'genie', x: 400, y: 500, emoji: '🧞‍♂️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['talkedToMarie'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Marie-Madeleine', "Je suis plus qu'une image dans un cadre. Cherchez le fragment de mon histoire derrière les colonnes.", [
-              {
-                label: 'Fermer',
-                callback: () => {
-                  const f = game.entities.find(e => e.id === 'fragment1');
-                  if (f) f.isHidden = false;
-                }
-              }
-            ]);
+            game.dialogue.show('Génie de la Bibliothèque', "Salutations, voyageur. Je suis le Génie de la Bibliothèque. Bienvenue dans l'ultime épreuve : 'L'émotion et la pensée'. L'Europe est une œuvre inachevée. Avance vers la Bibliothèque Ancienne pour débloquer ton premier indice.", [{ label: 'Compris', callback: null }]);
           }
         },
         {
-          id: 'erasme', x: 600, y: 250, emoji: '🧠', size: 40, isHidden: false,
+          id: 'bibliotheque', x: 175, y: 150, emoji: '📚', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['talkedToErasme'] = true;
+            game.progress['hasIndice1'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Érasme', "Voici le Miroir de la Folie. Trouvez le fragment de vérité caché dans les échafaudages.", [
-              {
-                label: 'Fermer',
-                callback: () => {
-                  const f = game.entities.find(e => e.id === 'fragment2');
-                  if (f) f.isHidden = false;
-                }
-              }
-            ]);
+            game.dialogue.show('Bibliothèque Ancienne', "Indice 1 : Comment l'humanisme et l'art permettent-ils de penser, critiquer et construire l'Europe ? Cherche la réponse dans l'émotion de la Galerie Sombre et la raison du Pupitre de l'Érudit.", [{ label: 'Chercher la suite', callback: null }]);
           }
         },
         {
-          id: 'fragment1', x: 120, y: 450, emoji: '🧩', size: 30, isHidden: true,
+          id: 'galerie', x: 625, y: 150, emoji: '🖼️', size: 50, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['hasFragment1'] = true;
-            const f = game.entities.find(e => e.id === 'fragment1');
-            if (f) f.isHidden = true;
+            if (!game.progress['hasIndice1']) {
+               game.state = GameState.DIALOGUE;
+               game.dialogue.show('Galerie Sombre', "Il fait trop sombre pour comprendre cette œuvre. Visitez d'abord la Bibliothèque Ancienne.", [{ label: 'Fermer', callback: null }]);
+               return;
+            }
+            game.progress['hasIndice2'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez récupéré un fragment d'histoire.", [{ label: 'Fermer', callback: null }]);
+            game.dialogue.show('Galerie Sombre', "Indice 2 : L'œuvre 'Sainte Marie-Madeleine en extase' (1619) de Rubens émerge du clair-obscur. Remarquez l'intensité émotionnelle, les couleurs chaudes et le mouvement baroque. L'humain n'est pas que pure raison, il est aussi un être de profonds sentiments et de subjectivité.", [{ label: 'Fascinant', callback: null }]);
           }
         },
         {
-          id: 'fragment2', x: 670, y: 450, emoji: '🧩', size: 30, isHidden: true,
+          id: 'pupitre', x: 400, y: 400, emoji: '✍️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
-            game.progress['hasFragment2'] = true;
-            const f = game.entities.find(e => e.id === 'fragment2');
-            if (f) f.isHidden = true;
+            if (!game.progress['hasIndice1']) {
+               game.state = GameState.DIALOGUE;
+               game.dialogue.show('Pupitre de l\'Érudit', "Des manuscrits illisibles sans le contexte de la Bibliothèque Ancienne.", [{ label: 'Fermer', callback: null }]);
+               return;
+            }
+            game.progress['hasIndice3'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Système', "Vous avez récupéré un fragment de vérité.", [{ label: 'Fermer', callback: null }]);
+            game.dialogue.show('Pupitre de l\'Érudit', "Indice 3 : Sur ce pupitre encombré, Érasme a rédigé l'Éloge de la Folie. Il utilise l'ironie et la satire comme outils d'esprit critique. La véritable liberté de pensée naît du doute.", [{ label: 'Intéressant', callback: null }]);
           }
         },
         {
-          id: 'statue', x: 400, y: 450, emoji: '🗿', size: 80, isHidden: false,
+          id: 'grand_livre', x: 400, y: 250, emoji: '📖', size: 60, isHidden: false,
           onInteract: (game: Game) => {
-            if (!game.progress['hasFragment1'] || !game.progress['hasFragment2']) {
+            if (!game.progress['hasIndice2'] || !game.progress['hasIndice3']) {
               game.state = GameState.DIALOGUE;
-              game.dialogue.show('Statue de Pierre', "Je suis figée. Il me manque des récits pour m'animer.", [{ label: 'Fermer', callback: null }]);
+              game.dialogue.show('Le Grand Livre de l\'Europe', "L'œuvre est inachevée. Rassemblez les indices de la Galerie et du Pupitre avant de l'ouvrir.", [{ label: 'Fermer', callback: null }]);
             } else {
-              game.state = GameState.DIALOGUE;
-              game.dialogue.show('Statue de Pierre', "Vous avez rassemblé les récits. Voulez-vous m'injecter l'empathie ?", [
-                {
-                  label: 'Injecter de l\'empathie',
-                  callback: () => {
-                    game.particles.emit(400, 450, 50, '#ff00ff');
-                    const d = game.entities.find(e => e.id === 'doorEnd');
-                    if (d) d.isHidden = false;
+              const askCharade2 = () => {
+                game.state = GameState.DIALOGUE;
+                game.dialogue.promptInput('Le Penseur Critique', "Mon premier commence comme une nouvelle époque.\nMon second évoque la sagesse et la réflexion.", (value) => {
+                  const val = value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                  if (val === 'ERASME') {
+                    game.particles.emit(400, 250, 50, '#ff00ff');
+                    game.state = GameState.DIALOGUE;
+                    game.dialogue.show('Génie de la Bibliothèque', "Excellent ! L'Europe est une synthèse de ces deux forces : l'émotion vibrante et la liberté de pensée. L'œuvre inachevée continue avec vous. La voie est libre !", [
+                      {
+                        label: 'Franchir la porte finale',
+                        callback: () => {
+                          const d = game.entities.find(e => e.id === 'doorEnd');
+                          if (d) d.isHidden = false;
+                        }
+                      }
+                    ]);
+                  } else {
+                    game.state = GameState.DIALOGUE;
+                    game.dialogue.show('Génie de la Bibliothèque', "Même Érasme a fait des ratures, réessayez !", [
+                      { label: 'Réessayer', callback: askCharade2 },
+                      { label: 'Donner sa langue au chat', callback: () => {
+                          game.audio.playBeep(200, 0.3);
+                          setTimeout(() => game.audio.playBeep(150, 0.3), 300);
+                          setTimeout(() => game.audio.playBeep(100, 0.6), 600);
+                          game.dialogue.show('Génie de la Bibliothèque', "La réponse était ÉRASME. L'Europe est une synthèse de ces deux forces : l'émotion vibrante et la liberté de pensée. La voie est libre !", [
+                            {
+                              label: 'Franchir la porte finale',
+                              callback: () => {
+                                const d = game.entities.find(e => e.id === 'doorEnd');
+                                if (d) d.isHidden = false;
+                              }
+                            }
+                          ]);
+                      }}
+                    ]);
                   }
-                }
-              ]);
+                });
+              };
+
+              const askCharade1 = () => {
+                game.state = GameState.DIALOGUE;
+                game.dialogue.promptInput('La Figure Émotive', "Mon premier se déguste au goûter.\nMon second est un prénom célèbre chrétien.", (value) => {
+                  const val = value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
+                  if (val.includes('MARIEMADELEINE') || val.includes('MADELEINEMARIE')) {
+                    game.particles.emit(400, 250, 30, '#ffff00');
+                    askCharade2();
+                  } else {
+                    game.state = GameState.DIALOGUE;
+                    game.dialogue.show('Génie de la Bibliothèque', "Même Érasme a fait des ratures, réessayez !", [
+                      { label: 'Réessayer', callback: askCharade1 },
+                      { label: 'Donner sa langue au chat', callback: () => {
+                          game.audio.playBeep(200, 0.3);
+                          setTimeout(() => game.audio.playBeep(150, 0.3), 300);
+                          setTimeout(() => game.audio.playBeep(100, 0.6), 600);
+                          askCharade2();
+                      }}
+                    ]);
+                  }
+                });
+              };
+
+              askCharade1();
             }
           }
         },
