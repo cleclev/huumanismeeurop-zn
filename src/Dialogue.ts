@@ -61,7 +61,7 @@ export class Dialogue {
   promptInput(speaker: string, text: string, onConfirm: (value: string) => void) {
     this.ui.classList.remove('hidden');
     this.speakerName.textContent = speaker;
-    this.dialogueText.textContent = text;
+    this.dialogueText.innerHTML = text;
     this.choicesContainer.innerHTML = '';
 
     const input = document.createElement('input');
@@ -82,6 +82,7 @@ export class Dialogue {
 
     input.focus();
     input.onkeydown = (e) => {
+      e.stopPropagation();
       if (e.key === 'Enter') {
         btn.click();
       }
@@ -94,10 +95,10 @@ export class Dialogue {
       btn.textContent = choice.label;
       btn.className = 'bg-gray-800 text-white p-2 m-1 rounded';
       btn.onclick = () => {
+        this.hide();
         if (choice.callback) {
           choice.callback();
         }
-        this.hide();
       };
       this.choicesContainer.appendChild(btn);
     });

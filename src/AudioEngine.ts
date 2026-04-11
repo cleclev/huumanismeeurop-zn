@@ -19,4 +19,14 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
     osc.stop(this.ctx.currentTime + duration);
   }
+
+  play(type: 'move' | 'interact' | 'dialogue' | 'success' | 'error') {
+    switch (type) {
+      case 'move': this.playBeep(200, 0.05); break;
+      case 'interact': this.playBeep(400, 0.1); break;
+      case 'dialogue': this.playBeep(600, 0.02); break;
+      case 'success': this.playBeep(800, 0.3); break;
+      case 'error': this.playBeep(150, 0.3); break;
+    }
+  }
 }

@@ -105,13 +105,92 @@ export class Game {
           if (this.transitionAlpha > 0) {
             requestAnimationFrame(fadeOut);
           } else {
-            this.state = GameState.PLAYING;
+            if (index === 2) {
+              this.startLevel2Sequence();
+            } else {
+              this.state = GameState.PLAYING;
+            }
           }
         };
         fadeOut();
       }
     };
     animateTransition();
+  }
+
+  startLevel2Sequence() {
+    this.state = GameState.DIALOGUE;
+    this.progress['level2Words'] = [];
+    this.showWordSearch();
+  }
+
+  showWordSearch() {
+    this.state = GameState.DIALOGUE;
+    const wordsToFind = ['DICTATURE', 'PROPAGANDE', 'ARMEE', 'GUERRE', 'POUVOIR'];
+    const found = this.progress['level2Words'] || [];
+    const remaining = wordsToFind.filter(w => !found.includes(w));
+
+    if (remaining.length === 0) {
+      this.showLevel2QCM();
+      return;
+    }
+
+    const grid = `<pre style="font-family: monospace; line-height: 1.2; background: #222; padding: 10px; border-radius: 5px; display: inline-block;">
+P R O P A G A N D E X Z
+O G X L O K J H G F D S
+U U U Q W D M K L P O I
+V E C E R I Y T R E W Q
+O R L K R C X Z A S D F
+I R O I U T G H J K L M
+R E W E R A T Y U I O P
+A S D F G T H J K L Z X
+C V B N M U Q W E R T Y
+U I O P A R S D F G H J
+K L Z X C E V B N M Q W
+X A R M E E J K L M N P</pre>`;
+
+    const text = `Trouvez les 5 mots clés liés au pouvoir dans cette grille :<br><br>${grid}<br><br>Mots trouvés : ${found.join(', ') || 'Aucun'}<br>Il en reste ${remaining.length}.`;
+
+    this.dialogue.promptInput('Système', text, (val) => {
+      const word = val.trim().toUpperCase();
+      if (wordsToFind.includes(word)) {
+        if (!found.includes(word)) {
+          found.push(word);
+          this.progress['level2Words'] = found;
+          this.audio.play('success');
+          this.showWordSearch();
+        } else {
+          this.state = GameState.DIALOGUE;
+          this.dialogue.show('Système', "Vous avez déjà trouvé ce mot !", [{ label: 'Continuer', callback: () => this.showWordSearch() }]);
+        }
+      } else {
+        this.audio.play('error');
+        this.state = GameState.DIALOGUE;
+        this.dialogue.show('Système', "Ce mot n'est pas dans la grille ou n'est pas un mot clé.", [{ label: 'Réessayer', callback: () => this.showWordSearch() }]);
+      }
+    });
+  }
+
+  showLevel2QCM() {
+    this.state = GameState.DIALOGUE;
+    this.dialogue.show('Système', "Bravo ! Vous avez identifié les piliers de cette zone. Alors, selon vous, quel est le contexte de ce niveau ?", [
+      { label: '1. Une compétition de cuisine médiévale entre chevaliers', callback: () => this.handleQCM(false) },
+      { label: '2. Une guerre, des régimes autoritaires et la propagande', callback: () => this.handleQCM(true) },
+      { label: '3. Un concours du plus beau bouquet de fleurs soviétique', callback: () => this.handleQCM(false) },
+      { label: '4. Les Jeux olympiques des gladiateurs romains', callback: () => this.handleQCM(false) },
+      { label: '5. Une exposition sur la mode des uniformes du XXe siècle', callback: () => this.handleQCM(false) }
+    ]);
+  }
+
+  handleQCM(correct: boolean) {
+    this.state = GameState.DIALOGUE;
+    if (correct) {
+      this.audio.play('success');
+      this.dialogue.show('Système', "Félicitations ! Vous avez saisi l'essence de ce lieu. Vous pouvez maintenant explorer la Cité de l'Ordre.", [{ label: 'Entrer', callback: () => { this.state = GameState.PLAYING; } }]);
+    } else {
+      this.audio.play('error');
+      this.dialogue.show('Système', "Non, ici on ne cuisine pas, on modèle les esprits. Réessayez !", [{ label: 'Réessayer', callback: () => this.showLevel2QCM() }]);
+    }
   }
 
   createLevel0(): Level {
