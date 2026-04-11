@@ -643,13 +643,17 @@ export class Game {
         ctx.fillRect(380, 390, 50, 40); // Manuscrit
         ctx.fillStyle = '#d7ccc8';
         ctx.fillText('Pupitre de l\'Érudit', 400, 370);
+
+        // Mur Blanc (Centre)
+        ctx.fillStyle = '#eeeeee';
+        ctx.fillRect(350, 200, 100, 100);
       },
       entities: [
         {
           id: 'genie', x: 400, y: 500, emoji: '🧞‍♂️', size: 40, isHidden: false,
           onInteract: (game: Game) => {
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Génie de la Bibliothèque', "Salutations, voyageur. Je suis le Génie de la Bibliothèque. Bienvenue dans l'ultime épreuve : 'L'émotion et la pensée'. L'Europe est une œuvre inachevée. Avance vers la Bibliothèque Ancienne pour débloquer ton premier indice.", [{ label: 'Compris', callback: null }]);
+            game.dialogue.show('Génie de la Bibliothèque', "Bravo, vous avez atteint le seuil de la synthèse. Ici, le cœur et la raison doivent s'accorder. 📚 Allez à la Bibliothèque Ancienne pour commencer.", [{ label: 'Compris', callback: null }]);
           }
         },
         {
@@ -657,7 +661,7 @@ export class Game {
           onInteract: (game: Game) => {
             game.progress['hasIndice1'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Bibliothèque Ancienne', "Indice 1 : Comment l'humanisme et l'art permettent-ils de penser, critiquer et construire l'Europe ? Cherche la réponse dans l'émotion de la Galerie Sombre et la raison du Pupitre de l'Érudit.", [{ label: 'Chercher la suite', callback: null }]);
+            game.dialogue.show('Bibliothèque Ancienne', "Pour stabiliser les fondations de l'Europe, il faut comprendre comment l'art et la pensée la construisent. C'est un véritable processus d'auto-transformation. 🖌️🪶 Visitez la Galerie Sombre et le Pupitre de l'Érudit.", [{ label: 'Chercher la suite', callback: null }]);
           }
         },
         {
@@ -670,7 +674,7 @@ export class Game {
             }
             game.progress['hasIndice2'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Galerie Sombre', "Indice 2 : L'œuvre 'Sainte Marie-Madeleine en extase' (1619) de Rubens émerge du clair-obscur. Remarquez l'intensité émotionnelle, les couleurs chaudes et le mouvement baroque. L'humain n'est pas que pure raison, il est aussi un être de profonds sentiments et de subjectivité.", [{ label: 'Fascinant', callback: null }]);
+            game.dialogue.show('Galerie Sombre', "Une femme au centre, un contraste violent entre ombre et lumière (clair-obscur), des vêtements en mouvement et un regard tourné vers le ciel. Est-ce une simple image ou une émotion qui transperce la toile ? N'oubliez pas le regard masculin qui cadre cette émotion. 🖌️", [{ label: 'Fascinant', callback: null }]);
           }
         },
         {
@@ -683,24 +687,26 @@ export class Game {
             }
             game.progress['hasIndice3'] = true;
             game.state = GameState.DIALOGUE;
-            game.dialogue.show('Pupitre de l\'Érudit', "Indice 3 : Sur ce pupitre encombré, Érasme a rédigé l'Éloge de la Folie. Il utilise l'ironie et la satire comme outils d'esprit critique. La véritable liberté de pensée naît du doute.", [{ label: 'Intéressant', callback: null }]);
+            game.dialogue.show('Pupitre de l\'Érudit', "Un homme qui a révolutionné l'Europe par sa plume 🪶. Il ne dirigeait pas d'armée, mais il utilisait l'humour et l'ironie pour dénoncer l'hypocrisie de l'Église et des rois. Pour lui, 'la Folie' est un personnage qui dit la vérité. C'est le triomphe de l'esprit critique.", [{ label: 'Intéressant', callback: null }]);
           }
         },
         {
-          id: 'grand_livre', x: 400, y: 250, emoji: '📖', size: 60, isHidden: false,
+          id: 'mur_blanc', x: 400, y: 250, emoji: '🧱', size: 60, isHidden: false,
           onInteract: (game: Game) => {
             if (!game.progress['hasIndice2'] || !game.progress['hasIndice3']) {
               game.state = GameState.DIALOGUE;
-              game.dialogue.show('Le Grand Livre de l\'Europe', "L'œuvre est inachevée. Rassemblez les indices de la Galerie et du Pupitre avant de l'ouvrir.", [{ label: 'Fermer', callback: null }]);
+              game.dialogue.show('Le Grand Mur Blanc', "Le mur attend que vous ayez saisi l'émotion de la Galerie et la pensée du Pupitre.", [{ label: 'Fermer', callback: null }]);
             } else {
               const askCharade2 = () => {
                 game.state = GameState.DIALOGUE;
-                game.dialogue.promptInput('Le Penseur Critique', "Mon premier commence comme une nouvelle époque.\nMon second évoque la sagesse et la réflexion.", (value) => {
+                game.dialogue.promptInput('Le Penseur', "1. Mon premier est le début d'une nouvelle époque géologique ou historique.\n2. Mon second rime avec asthme et évoque la respiration de l'esprit.", (value) => {
                   const val = value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                   if (val === 'ERASME') {
-                    game.particles.emit(400, 250, 50, '#ff00ff');
+                    game.particles.emit(400, 250, 100, '#ff0000');
+                    game.particles.emit(400, 250, 100, '#00ff00');
+                    game.particles.emit(400, 250, 100, '#0000ff');
                     game.state = GameState.DIALOGUE;
-                    game.dialogue.show('Génie de la Bibliothèque', "Excellent ! L'Europe est une synthèse de ces deux forces : l'émotion vibrante et la liberté de pensée. L'œuvre inachevée continue avec vous. La voie est libre !", [
+                    game.dialogue.show('Le Mur Blanc', "Vous avez réuni l'émotion et la pensée. L'Europe n'est plus une statue de pierre, mais une œuvre vivante dont vous êtes maintenant l'un des auteurs. 📚🖌️🪶", [
                       {
                         label: 'Franchir la porte finale',
                         callback: () => {
@@ -710,51 +716,86 @@ export class Game {
                       }
                     ]);
                   } else {
-                    game.state = GameState.DIALOGUE;
-                    game.dialogue.show('Génie de la Bibliothèque', "Même Érasme a fait des ratures, réessayez !", [
-                      { label: 'Réessayer', callback: askCharade2 },
-                      { label: 'Donner sa langue au chat', callback: () => {
-                          game.audio.playBeep(200, 0.3);
-                          setTimeout(() => game.audio.playBeep(150, 0.3), 300);
-                          setTimeout(() => game.audio.playBeep(100, 0.6), 600);
-                          game.dialogue.show('Génie de la Bibliothèque', "La réponse était ÉRASME. L'Europe est une synthèse de ces deux forces : l'émotion vibrante et la liberté de pensée. La voie est libre !", [
-                            {
-                              label: 'Franchir la porte finale',
-                              callback: () => {
-                                const d = game.entities.find(e => e.id === 'doorEnd');
-                                if (d) d.isHidden = false;
+                    game.progress['charade2Fails'] = (game.progress['charade2Fails'] || 0) + 1;
+                    if (game.progress['charade2Fails'] >= 2) {
+                      game.state = GameState.DIALOGUE;
+                      game.dialogue.show('Indice Mystérieux', "🐈 Vous semblez bloqué... La réponse est ÉRASME.", [
+                        { label: 'Inscrire ÉRASME', callback: () => {
+                            game.particles.emit(400, 250, 100, '#ff0000');
+                            game.particles.emit(400, 250, 100, '#00ff00');
+                            game.particles.emit(400, 250, 100, '#0000ff');
+                            game.state = GameState.DIALOGUE;
+                            game.dialogue.show('Le Mur Blanc', "Vous avez réuni l'émotion et la pensée. L'Europe n'est plus une statue de pierre, mais une œuvre vivante dont vous êtes maintenant l'un des auteurs. 📚🖌️🪶", [
+                              {
+                                label: 'Franchir la porte finale',
+                                callback: () => {
+                                  const d = game.entities.find(e => e.id === 'doorEnd');
+                                  if (d) d.isHidden = false;
+                                }
                               }
-                            }
-                          ]);
-                      }}
-                    ]);
+                            ]);
+                        }}
+                      ]);
+                    } else {
+                      game.state = GameState.DIALOGUE;
+                      game.dialogue.show('Le Mur Blanc', "Les lettres s'effacent... Ce n'est pas le bon nom.", [
+                        { label: 'Réessayer', callback: askCharade2 },
+                        { label: 'Donner sa langue au chat 🐈', callback: () => {
+                            game.audio.playBeep(200, 0.3);
+                            setTimeout(() => game.audio.playBeep(150, 0.3), 300);
+                            setTimeout(() => game.audio.playBeep(100, 0.6), 600);
+                            game.dialogue.show('Indice Mystérieux', "🐈 C'est un nom qui commence comme une Ère et finit dans un souffle.", [
+                              { label: 'Réessayer', callback: askCharade2 }
+                            ]);
+                        }}
+                      ]);
+                    }
                   }
                 });
               };
 
               const askCharade1 = () => {
                 game.state = GameState.DIALOGUE;
-                game.dialogue.promptInput('La Figure Émotive', "Mon premier se déguste au goûter.\nMon second est un prénom célèbre chrétien.", (value) => {
+                game.dialogue.promptInput('Le Sujet de l\'Art', "1. Mon second est le prénom de la figure chrétienne la plus célèbre.\n2. Mon premier se déguste souvent à l'heure du goûter. (Indice : Gâteau préféré de Proust)", (value) => {
                   const val = value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
-                  if (val.includes('MARIEMADELEINE') || val.includes('MADELEINEMARIE')) {
-                    game.particles.emit(400, 250, 30, '#ffff00');
+                  if (val.includes('MARIEMADELEINE') || val.includes('MADELEINEMARIE') || val.includes('SAINTEMARIEMADELEINE')) {
+                    game.progress['charade1Solved'] = true;
+                    game.particles.emit(400, 250, 80, '#ffffff');
                     askCharade2();
                   } else {
-                    game.state = GameState.DIALOGUE;
-                    game.dialogue.show('Génie de la Bibliothèque', "Même Érasme a fait des ratures, réessayez !", [
-                      { label: 'Réessayer', callback: askCharade1 },
-                      { label: 'Donner sa langue au chat', callback: () => {
-                          game.audio.playBeep(200, 0.3);
-                          setTimeout(() => game.audio.playBeep(150, 0.3), 300);
-                          setTimeout(() => game.audio.playBeep(100, 0.6), 600);
-                          askCharade2();
-                      }}
-                    ]);
+                    game.progress['charade1Fails'] = (game.progress['charade1Fails'] || 0) + 1;
+                    if (game.progress['charade1Fails'] >= 2) {
+                      game.state = GameState.DIALOGUE;
+                      game.dialogue.show('Indice Mystérieux', "🐈 Vous semblez bloqué... La réponse est MARIE MADELEINE.", [
+                        { label: 'Inscrire MARIE MADELEINE', callback: () => {
+                            game.progress['charade1Solved'] = true;
+                            game.particles.emit(400, 250, 80, '#ffffff');
+                            askCharade2();
+                        }}
+                      ]);
+                    } else {
+                      game.state = GameState.DIALOGUE;
+                      game.dialogue.show('Le Mur Blanc', "Les lettres s'effacent... Ce n'est pas le bon nom.", [
+                        { label: 'Réessayer', callback: askCharade1 },
+                        { label: 'Donner sa langue au chat 🐈', callback: () => {
+                            game.audio.playBeep(200, 0.3);
+                            setTimeout(() => game.audio.playBeep(150, 0.3), 300);
+                            setTimeout(() => game.audio.playBeep(100, 0.6), 600);
+                            game.dialogue.show('Indice Mystérieux', "🐈 C'est une figure de lumière dont le nom inverse l'ordre de la charade. Elle pleure dans le clair-obscur...", [
+                              { label: 'Réessayer', callback: askCharade1 }
+                            ]);
+                        }}
+                      ]);
+                    }
                   }
                 });
               };
 
-              askCharade1();
+              if (game.progress['charade1Solved']) {
+                askCharade2();
+              } else {
+                askCharade1();
+              }
             }
           }
         },
