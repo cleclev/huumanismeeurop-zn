@@ -65,6 +65,44 @@ export class Game {
       }
     });
 
+    const setupMobileButton = (id: string, keyCode: string) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      
+      const press = (e: Event) => {
+        if (e.type === 'touchstart') e.preventDefault(); // Prevent duplicate mouse events
+        this.keys[keyCode] = true;
+        btn.classList.add('active');
+        this.audio.init();
+        
+        if (keyCode === 'e') {
+          if (this.state === GameState.PLAYING) {
+            this.interact();
+          } else if (this.state === GameState.DIALOGUE) {
+            this.dialogue.skip();
+          }
+        }
+      };
+      
+      const release = (e: Event) => {
+        if (e.type === 'touchend') e.preventDefault();
+        this.keys[keyCode] = false;
+        btn.classList.remove('active');
+      };
+
+      btn.addEventListener('touchstart', press, { passive: false });
+      btn.addEventListener('touchend', release, { passive: false });
+      btn.addEventListener('mousedown', press);
+      btn.addEventListener('mouseup', release);
+      btn.addEventListener('mouseleave', release);
+    };
+
+    setupMobileButton('btn-up', 'ArrowUp');
+    setupMobileButton('btn-down', 'ArrowDown');
+    setupMobileButton('btn-left', 'ArrowLeft');
+    setupMobileButton('btn-right', 'ArrowRight');
+    setupMobileButton('btn-action', 'e');
+
     this.loadLevel(0);
     this.loop();
   }
@@ -1007,6 +1045,7 @@ X A R M E E J K L M N P</pre>`;
       this.dialogue.hideWithoutCallback();
       document.getElementById('inventory-ui')?.classList.add('hidden');
       document.getElementById('dialogue-ui')?.classList.add('hidden');
+      document.getElementById('mobile-controls')?.classList.add('hidden');
       this.endingTimer++;
       if (this.endingTimer > 120) { // 2 secondes à 60fps
         this.creditsScrollY -= 1;
