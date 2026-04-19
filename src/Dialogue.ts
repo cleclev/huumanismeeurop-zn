@@ -27,6 +27,7 @@ export class Dialogue {
 
   show(speaker: string, text: string, choices: Choice[]) {
     this.ui.classList.remove('hidden');
+    document.getElementById('mobile-controls')?.classList.add('hidden');
     this.speakerName.textContent = speaker;
     this.fullText = text;
     this.currentChoices = choices;
@@ -60,6 +61,7 @@ export class Dialogue {
 
   promptInput(speaker: string, text: string, onConfirm: (value: string) => void) {
     this.ui.classList.remove('hidden');
+    document.getElementById('mobile-controls')?.classList.add('hidden');
     this.speakerName.textContent = speaker;
     this.dialogueText.innerHTML = text;
     this.choicesContainer.innerHTML = '';
@@ -107,6 +109,7 @@ export class Dialogue {
   hide() {
     if (this.typewriterInterval) clearInterval(this.typewriterInterval);
     this.ui.classList.add('hidden');
+    document.getElementById('mobile-controls')?.classList.remove('hidden');
     this.onComplete();
   }
 
